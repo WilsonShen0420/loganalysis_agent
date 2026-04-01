@@ -1,0 +1,6 @@
+# Request: natural language diagnostic query
+string query                # Natural language query from user
+string session_id           # Empty string = new session, non-empty = continue conversation
+---
+# Response: structured diagnostic result
+loganalysis_agent/DiagResult result

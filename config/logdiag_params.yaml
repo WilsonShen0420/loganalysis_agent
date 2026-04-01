@@ -1,0 +1,39 @@
+# =============================================================================
+# AUMOBO LogDiag — ROS Parameters
+# =============================================================================
+
+logdiag:
+  # LLM backend selection: "claude", "openai", "gemini", or "local"
+  llm_backend: "claude"
+
+  # Anthropic Claude API settings
+  claude:
+    api_key: ""                           # env: ANTHROPIC_API_KEY (recommended)
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 4096
+
+  # OpenAI ChatGPT API settings
+  openai:
+    api_key: ""                           # env: OPENAI_API_KEY (recommended)
+    model: "gpt-4o"
+    max_tokens: 4096
+
+  # Google Gemini API settings
+  gemini:
+    api_key: ""                           # env: GOOGLE_API_KEY (recommended)
+    model: "gemini-2.0-flash"
+    max_tokens: 4096
+
+  # Local backend settings (Ollama)
+  local:
+    base_url: "http://localhost:11434"
+    model: "qwen2.5:7b-instruct"
+    max_tokens: 4096
+
+  # Conversation settings
+  max_tool_calls: 10         # Max tool invocations per single diagnosis
+  session_timeout_sec: 600   # Session expiry (seconds)
+
+  # getparserlog ROS service name
+  log_service_name: "/maintenance"
+  log_service_method: "getparserlog"
