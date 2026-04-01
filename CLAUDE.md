@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**AUMOBO Log-Based Diagnostic AI Service (LogDiag)** — a ROS Noetic node that accepts natural language queries, retrieves system logs via the existing `getparserlog` ROS service, compares them against predefined Golden Path baselines, and outputs structured diagnostic reports powered by LLM (cloud: Claude API / local: Ollama + Qwen2.5-7B-Instruct).
+**AUMOBO Log-Based Diagnostic AI Service (LogDiag)** — a ROS Noetic node that accepts natural language queries, retrieves system logs via the existing `getparserlog` ROS service, compares them against predefined Golden Path baselines, and outputs structured diagnostic reports powered by LLM (cloud: Claude API / OpenAI ChatGPT / Google Gemini; local: Ollama + Qwen2.5-7B-Instruct).
 
 ## Repository Structure
 
@@ -38,6 +38,8 @@ loganalysis_agent/
 │       │   ├── __init__.py
 │       │   ├── base.py                  # LLM abstract base class
 │       │   ├── cloud_claude.py          # Claude API (Anthropic SDK)
+│       │   ├── cloud_openai.py          # OpenAI ChatGPT API
+│       │   ├── cloud_gemini.py          # Google Gemini API
 │       │   └── local_ollama.py          # Ollama + Qwen2.5-7B-Instruct
 │       ├── tools/
 │       │   ├── __init__.py
@@ -76,10 +78,12 @@ loganalysis_agent/
 
 ### LLM Backends
 
-- **Cloud**: Anthropic Claude API (`claude-sonnet-4-20250514`) via `anthropic` Python SDK
+- **Claude**: Anthropic Claude API (`claude-sonnet-4-20250514`) via `anthropic` Python SDK
+- **OpenAI**: OpenAI ChatGPT API (`gpt-4o`) via `openai` Python SDK
+- **Gemini**: Google Gemini API (`gemini-2.0-flash`) via REST API
 - **Local**: Ollama + `qwen2.5:7b-instruct` via HTTP API (`localhost:11434`)
 
-Selected via ROS param `~llm_backend` (`"cloud"` or `"local"`).
+Selected via ROS param `~llm_backend` (`"claude"`, `"openai"`, `"gemini"`, or `"local"`).
 
 ### ROS Interfaces
 
@@ -134,5 +138,7 @@ Categories: `loc`, `slam`, `tcp`, `error`, `booting`, `sensor`, `maintenance`, `
 
 ### Environment Variables
 
-- `ANTHROPIC_API_KEY`: Required for cloud backend
+- `ANTHROPIC_API_KEY`: Required for Claude backend
+- `OPENAI_API_KEY`: Required for OpenAI backend
+- `GOOGLE_API_KEY`: Required for Gemini backend
 - `OLLAMA_HOST`: Override Ollama endpoint (default: `http://localhost:11434`)

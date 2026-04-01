@@ -117,22 +117,40 @@ class LogDiagNode:
         this_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(this_dir, "..", "..", "config", "golden_paths.yaml")
 
+    # Default model per backend
+    _BACKEND_DEFAULTS = {
+        "claude": {"model": "claude-sonnet-4-20250514"},
+        "openai": {"model": "gpt-4o"},
+        "gemini": {"model": "gemini-2.0-flash"},
+        "local":  {"model": "qwen2.5:7b-instruct"},
+    }
+
     def _get_engine_kwargs(self) -> dict:
         """Build kwargs for the LLM engine based on the selected backend."""
-        if self._llm_backend == "cloud":
-            return {
-                "api_key": rospy.get_param("logdiag/cloud/api_key", ""),
-                "model": rospy.get_param("logdiag/cloud/model", "claude-sonnet-4-20250514"),
-                "max_tokens": rospy.get_param("logdiag/cloud/max_tokens", 4096),
-            }
-        elif self._llm_backend == "local":
-            return {
-                "base_url": rospy.get_param("logdiag/local/base_url", ""),
-                "model": rospy.get_param("logdiag/local/model", "qwen2.5:7b-instruct"),
-                "max_tokens": rospy.get_param("logdiag/local/max_tokens", 4096),
-            }
-        else:
-            raise ValueError(f"Unknown llm_backend: {self._llm_backend}")
+        backend = self._llm_backend
+        defaults = self._BACKEND_DEFAULTS.get(backend)
+        if defaults is None:
+            supported = ", ".join(sorted(self._BACKEND_DEFAULTS.keys()))
+            raise ValueError(
+                f"Unknown llm_backend: '{backend}'. Supported: {supported}"
+            )
+
+        kwargs = {
+            "api_key": rospy.get_param(f"logdiag/{backend}/api_key", ""),
+            "model": rospy.get_param(
+                f"logdiag/{backend}/model", defaults["model"]
+            ),
+            "max_tokens": rospy.get_param(f"logdiag/{backend}/max_tokens", 4096),
+        }
+
+        # local backend needs base_url instead of api_key
+        if backend == "local":
+            kwargs.pop("api_key", None)
+            kwargs["base_url"] = rospy.get_param(
+                "logdiag/local/base_url", ""
+            )
+
+        return kwargs
 
     def _on_query_received(self, msg: String):
         """Handle incoming query from /logdiag/query topic."""

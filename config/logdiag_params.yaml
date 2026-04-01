@@ -3,15 +3,25 @@
 # =============================================================================
 
 logdiag:
-  # LLM backend selection: "cloud" or "local"
-  llm_backend: "cloud"
+  # LLM backend selection: "claude", "openai", "gemini", or "local"
+  llm_backend: "claude"
 
-  # Cloud backend settings (Anthropic Claude API)
-  cloud:
-    # API key: set via environment variable ANTHROPIC_API_KEY (recommended)
-    # or override here (not recommended for production)
-    api_key: ""
+  # Anthropic Claude API settings
+  claude:
+    api_key: ""                           # env: ANTHROPIC_API_KEY (recommended)
     model: "claude-sonnet-4-20250514"
+    max_tokens: 4096
+
+  # OpenAI ChatGPT API settings
+  openai:
+    api_key: ""                           # env: OPENAI_API_KEY (recommended)
+    model: "gpt-4o"
+    max_tokens: 4096
+
+  # Google Gemini API settings
+  gemini:
+    api_key: ""                           # env: GOOGLE_API_KEY (recommended)
+    model: "gemini-2.0-flash"
     max_tokens: 4096
 
   # Local backend settings (Ollama)

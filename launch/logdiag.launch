@@ -1,6 +1,6 @@
 <launch>
-    <!-- LLM backend: "cloud" (Claude API) or "local" (Ollama) -->
-    <arg name="llm_backend" default="cloud" />
+    <!-- LLM backend: "claude", "openai", "gemini", or "local" -->
+    <arg name="llm_backend" default="claude" />
 
     <!-- Load parameters -->
     <rosparam file="$(find loganalysis_agent)/config/logdiag_params.yaml" command="load" />
