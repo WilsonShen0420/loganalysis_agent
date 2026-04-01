@@ -1,0 +1,4 @@
+2026/03/31:140000:000 - loc:mobile_setting_finish
+2026/03/31:140001:200 - loc:map_loading_set-/home/aumobo/maps/office_1f
+2026/03/31:140003:500 - loc:enter_loc
+2026/03/31:140045:000 - error:maploading_timeout

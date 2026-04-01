@@ -1,0 +1,15 @@
+<launch>
+    <!-- LLM backend: "cloud" (Claude API) or "local" (Ollama) -->
+    <arg name="llm_backend" default="cloud" />
+
+    <!-- Load parameters -->
+    <rosparam file="$(find loganalysis_agent)/config/logdiag_params.yaml" command="load" />
+
+    <!-- Override llm_backend from launch argument -->
+    <param name="logdiag/llm_backend" value="$(arg llm_backend)" />
+
+    <!-- LogDiag Node -->
+    <node name="logdiag_node" pkg="loganalysis_agent" type="logdiag_node.py"
+          output="screen" respawn="false">
+    </node>
+</launch>

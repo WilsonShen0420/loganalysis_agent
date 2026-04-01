@@ -1,0 +1,29 @@
+# =============================================================================
+# AUMOBO LogDiag — ROS Parameters
+# =============================================================================
+
+logdiag:
+  # LLM backend selection: "cloud" or "local"
+  llm_backend: "cloud"
+
+  # Cloud backend settings (Anthropic Claude API)
+  cloud:
+    # API key: set via environment variable ANTHROPIC_API_KEY (recommended)
+    # or override here (not recommended for production)
+    api_key: ""
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 4096
+
+  # Local backend settings (Ollama)
+  local:
+    base_url: "http://localhost:11434"
+    model: "qwen2.5:7b-instruct"
+    max_tokens: 4096
+
+  # Conversation settings
+  max_tool_calls: 10         # Max tool invocations per single diagnosis
+  session_timeout_sec: 600   # Session expiry (seconds)
+
+  # getparserlog ROS service name
+  log_service_name: "/maintenance"
+  log_service_method: "getparserlog"

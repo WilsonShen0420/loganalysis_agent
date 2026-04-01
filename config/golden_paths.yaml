@@ -1,0 +1,160 @@
+# =============================================================================
+# AUMOBO LogDiag — Golden Path Knowledge Base
+# =============================================================================
+# Each entry defines the expected log sequence for a diagnosable operation.
+# See docs/log_diagnosis/golden_path_guide.md for authoring guidelines.
+#
+# Format reference:
+#   id:
+#     description: "Human-readable description"
+#     trigger: "The starting log pattern"
+#     steps:
+#       - pattern: "category:expected_content"
+#         timeout_ms: <max ms from previous step, null = no limit>
+#         on_missing: "Explanation when this step is absent"
+#         alternatives: ["alt_pattern_1", "alt_pattern_2"]
+#     error_patterns:
+#       - pattern: "category:error_content"
+#         meaning: "What this error indicates"
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# P0-1: Localization Start (定位載圖流程)
+# Source: mapparser.cpp (mobilesetting, do_statemachine)
+# ---------------------------------------------------------------------------
+localization_start:
+  description: "定位載圖流程：從 map switch 命令到完成定位"
+  trigger: "loc:mobile_setting_finish"
+  steps:
+    - pattern: "loc:mobile_setting_finish"
+      timeout_ms: null
+
+    - pattern: "loc:map_loading_set-*"
+      timeout_ms: 2000
+      on_missing: "地圖路徑無效或 mobilesetting 服務未回應"
+
+    - pattern: "loc:enter_loc"
+      timeout_ms: 3000
+      on_missing: "maploading.sh 執行失敗，檢查 LiDAR brand 配置"
+
+    - pattern: "loc:maploading_finish"
+      timeout_ms: 30000
+      on_missing: "地圖載入逾時，檢查 .pcd 檔案是否存在、LiDAR driver 是否正常"
+
+    - pattern: "loc:allocate_finish"
+      alternatives: ["loc:command_allocatepose_finish"]
+      timeout_ms: 5000
+      on_missing: "初始化姿態失敗，檢查 initialpose publish 是否成功"
+
+    - pattern: "loc:localization"
+      timeout_ms: 3000
+      on_missing: "狀態機未進入 LOC_LOCALIZATION，檢查 TF 是否正常"
+
+  error_patterns:
+    - pattern: "loc:pass_mobile_setting"
+      meaning: "上一次載圖尚未完成，新的 mobilesetting 被略過"
+    - pattern: "loc:map not exit:*"
+      meaning: "指定的地圖檔案不存在"
+
+# ---------------------------------------------------------------------------
+# P0-2: SLAM Build (SLAM 建圖啟動流程)
+# Source: mapparser.cpp (slamrequest, pthread_slam_start)
+# ---------------------------------------------------------------------------
+slam_build:
+  description: "SLAM 建圖流程：從建圖指令到 SLAM 啟動完成"
+  trigger: "slam:slam_start_request"
+  steps:
+    - pattern: "slam:slam_start_request"
+      timeout_ms: null
+
+    - pattern: "slam:kill_loc_process"
+      timeout_ms: 2000
+      on_missing: "定位程序停止失敗，可能有程序殘留"
+
+    - pattern: "slam:launch_slam_process"
+      timeout_ms: 5000
+      on_missing: "SLAM launch 啟動失敗，檢查 launch 檔案路徑與參數"
+
+    - pattern: "slam:slam_process_ready"
+      timeout_ms: 30000
+      on_missing: "SLAM 程序未就緒，檢查 LiDAR 資料是否正常接收"
+
+    - pattern: "slam:slam_build_running"
+      timeout_ms: 5000
+      on_missing: "SLAM 未進入建圖狀態，檢查 IMU 是否校正完成"
+
+  error_patterns:
+    - pattern: "error:slam_launch_failed"
+      meaning: "SLAM launch 檔案執行失敗"
+    - pattern: "error:lidar_no_data"
+      meaning: "LiDAR 無資料輸入，檢查 LiDAR driver 與連線"
+
+# ---------------------------------------------------------------------------
+# P0-3: Sensor Health (感測器健康監測)
+# Source: slamsequence.cpp (IMU/LiDAR monitor timer)
+# ---------------------------------------------------------------------------
+sensor_health:
+  description: "感測器健康監測：IMU 與 LiDAR 的持續性檢查"
+  trigger: "sensor:health_check_start"
+  steps:
+    - pattern: "sensor:health_check_start"
+      timeout_ms: null
+
+    - pattern: "sensor:imu_data_ok"
+      timeout_ms: 3000
+      on_missing: "IMU 資料未收到，檢查 IMU 硬體連線與 driver"
+
+    - pattern: "sensor:lidar_data_ok"
+      timeout_ms: 3000
+      on_missing: "LiDAR 資料未收到，檢查 LiDAR 電源、網路連線與 driver"
+
+    - pattern: "sensor:all_sensors_healthy"
+      timeout_ms: 5000
+      on_missing: "部分感測器未通過健康檢查，查看上方各別感測器狀態"
+
+  error_patterns:
+    - pattern: "error:imu_timeout"
+      meaning: "IMU 資料逾時，硬體可能斷線"
+    - pattern: "error:lidar_timeout"
+      meaning: "LiDAR 資料逾時，檢查網路連線或 driver 狀態"
+    - pattern: "sensor:imu_drift_warning"
+      meaning: "IMU 漂移超出閾值，可能需要重新校正"
+
+# ---------------------------------------------------------------------------
+# P0-4: System Boot (系統開機啟動序列)
+# Source: slamsequence.cpp (main), mapparser.cpp (main)
+# ---------------------------------------------------------------------------
+system_boot:
+  description: "系統開機啟動序列：從 booting 到各模組就緒"
+  trigger: "booting:system_start"
+  steps:
+    - pattern: "booting:system_start"
+      timeout_ms: null
+
+    - pattern: "booting:ros_master_ok"
+      timeout_ms: 10000
+      on_missing: "ROS Master 未啟動，檢查 roscore 是否正常運行"
+
+    - pattern: "booting:sensor_driver_loaded"
+      timeout_ms: 15000
+      on_missing: "感測器 driver 載入失敗，檢查 udev rules 與硬體連線"
+
+    - pattern: "booting:mapparser_ready"
+      timeout_ms: 10000
+      on_missing: "mapparser 節點未就緒，檢查 launch 順序與依賴"
+
+    - pattern: "booting:slamsequence_ready"
+      timeout_ms: 10000
+      on_missing: "slamsequence 節點未就緒，檢查 launch 順序與依賴"
+
+    - pattern: "booting:system_ready"
+      timeout_ms: 5000
+      on_missing: "系統未完成初始化，檢查各節點啟動狀態"
+
+  error_patterns:
+    - pattern: "error:roscore_not_found"
+      meaning: "ROS Master 未運行"
+    - pattern: "error:driver_load_failed:*"
+      meaning: "指定的 driver 載入失敗，查看具體 driver 名稱"
+    - pattern: "booting:timeout_waiting_for:*"
+      meaning: "等待某節點啟動逾時"

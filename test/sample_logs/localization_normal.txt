@@ -1,0 +1,6 @@
+2026/03/31:140000:000 - loc:mobile_setting_finish
+2026/03/31:140001:200 - loc:map_loading_set-/home/aumobo/maps/office_1f
+2026/03/31:140003:500 - loc:enter_loc
+2026/03/31:140025:100 - loc:maploading_finish
+2026/03/31:140028:300 - loc:allocate_finish
+2026/03/31:140030:000 - loc:localization
