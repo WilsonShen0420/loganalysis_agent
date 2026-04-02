@@ -9,7 +9,6 @@
 ```
 loganalysis_agent/
 ├── CLAUDE.md                            # This file
-├── AUMOBO_LogDiag_PRD.docx             # Product Requirements Document
 ├── package.xml                          # ROS Noetic package definition
 ├── CMakeLists.txt                       # catkin build configuration
 ├── setup.py                             # Python module install for catkin
@@ -61,8 +60,8 @@ loganalysis_agent/
 │   └── test_conversation_manager.py
 │
 └── docs/
+    ├── AUMOBO_LogDiag_PRD.docx          # Product Requirements Document
     └── log_diagnosis/
-        ├── README.md                    # Usage guide
         └── golden_path_guide.md         # How to write Golden Paths
 ```
 
